@@ -1,12 +1,34 @@
+# !pip install streamlit tensorflow numpy requests os
 import streamlit as st
 import tensorflow as tf
 import numpy as np
 import requests
+import os
 from tensorflow.keras.preprocessing import image
 from PIL import Image
 
+# Function to merge split model files
+def merge_model_parts(output_file, parts_prefix):
+    """Merges split .h5 model parts into a single file."""
+    if os.path.exists(output_file):  # Skip merging if already exists
+        return
+
+    with open(output_file, 'wb') as outfile:
+        part_num = 1
+        while True:
+            part_file = f"{parts_prefix}.part{part_num}"
+            if not os.path.exists(part_file):
+                break
+            with open(part_file, 'rb') as infile:
+                outfile.write(infile.read())
+            part_num += 1
+
+# Merge model parts before loading
+model_path = "image_classifier_model.h5"
+merge_model_parts(model_path, "image_classifier_model.h5")
+
 # Load trained model
-model = tf.keras.models.load_model("image_classifier_model.h5")
+model = tf.keras.models.load_model(model_path)
 
 # Class labels
 class_labels = {
