@@ -5,12 +5,15 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
 from predict import predict_image, class_labels  # Import prediction function and labels
 
+# Define the model filename
+model_filename = "model_inception.h5"
+
 # Function to merge the model parts
-def merge_model_parts(output_file="model_inception.h5"):
+def merge_model_parts(output_file):
     with open(output_file, 'wb') as output:
         part_number = 1
         while True:
-            part_filename = f"model_inception.h5.part{part_number}"
+            part_filename = f"{output_file}.part{part_number}"
             if not os.path.exists(part_filename):
                 break
             with open(part_filename, 'rb') as part_file:
@@ -18,11 +21,11 @@ def merge_model_parts(output_file="model_inception.h5"):
             part_number += 1
 
 # Check if full model exists, otherwise merge
-if not os.path.exists("model_inception.h5"):
-    merge_model_parts()
+if not os.path.exists(model_filename):
+    merge_model_parts(model_filename)
 
 # Load the model
-model = load_model("model_inception.h5")  # Ensure the model file is in the correct path
+model = load_model(model_filename)  # Ensure the model file is in the correct path
 
 st.title("Food Image Classifier 🍔🥗")
 st.write("Upload an image of a food item, and the model will predict its class with probability.")
@@ -34,11 +37,12 @@ if uploaded_file is not None:
     st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
     
     # Save the uploaded file temporarily
-    with open("temp_image.png", "wb") as f:
+    temp_filename = "temp_image.png"
+    with open(temp_filename, "wb") as f:
         f.write(uploaded_file.getbuffer())
     
     # Load and preprocess the image
-    img = image.load_img("temp_image.png", target_size=(224, 224))
+    img = image.load_img(temp_filename, target_size=(224, 224))
     img_array = image.img_to_array(img) / 255.0  # Normalize
     img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
     
