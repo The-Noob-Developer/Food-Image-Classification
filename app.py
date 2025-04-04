@@ -1,8 +1,25 @@
 import streamlit as st
 import numpy as np
+import os
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
 from predict import predict_image, class_labels  # Import prediction function and labels
+
+# Function to merge the model parts
+def merge_model_parts(output_file="model_inception.h5"):
+    with open(output_file, 'wb') as output:
+        part_number = 1
+        while True:
+            part_filename = f"model_inception.h5.part{part_number}"
+            if not os.path.exists(part_filename):
+                break
+            with open(part_filename, 'rb') as part_file:
+                output.write(part_file.read())
+            part_number += 1
+
+# Check if full model exists, otherwise merge
+if not os.path.exists("model_inception.h5"):
+    merge_model_parts()
 
 # Load the model
 model = load_model("model_inception.h5")  # Ensure the model file is in the correct path
